@@ -7,11 +7,6 @@
 }
 
 @font-face {
-  font-family: "yekan-bakh-medium";
-  src: url("/fonts/yekan-bakh/yekan-bakh-medium.ttf");
-}
-
-@font-face {
   font-family: "yekan-bakh-bold";
   src: url("/fonts/yekan-bakh/yekan-bakh-bold.ttf");
 }
@@ -36,7 +31,6 @@
 @theme inline {
   --font-*: initial;
   --font-yekan-bakh: "yekan-bakh";
-  --font-yekan-bakh-medium: "yekan-bakh-medium";
   --font-yekan-bakh-bold: "yekan-bakh-bold";
   --font-morabba: "morabba";
   --font-morabba-medium: "morabba-medium";
@@ -156,7 +150,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-yekan-bakh-medium;
+    @apply bg-background text-foreground font-yekan-bakh;
   }
 }
 

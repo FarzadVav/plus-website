@@ -1,16 +1,141 @@
-import CooperationBar from "@/components/static/cooperationBar/cooperationBar"
+"use client"
+
+import { useEffect, useRef } from "react"
+import { CheckIcon } from "lucide-react"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { ScrollToPlugin } from "gsap/ScrollToPlugin"
+
+import { Button } from "@/components/ui/button"
 import HeroCarousel from "@/components/static/heroCarousel/heroCarousel"
+import CooperationBar from "@/components/static/cooperationBar/cooperationBar"
+
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
 function Page() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const sectionsRef = useRef<HTMLDivElement[]>([])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const sections = sectionsRef.current.filter(Boolean)
+    if (sections.length === 0) return
+
+    // محاسبه موقعیت هر سکشن
+    const snapPoints = sections.map((section) => {
+      return section.offsetTop
+    })
+
+    let currentIndex = 0
+    let isScrolling = false
+
+    const handleWheel = (e: WheelEvent) => {
+      if (isScrolling) {
+        e.preventDefault()
+        return
+      }
+
+      e.preventDefault()
+
+      if (e.deltaY > 0) {
+        // اسکرول به پایین
+        if (currentIndex < snapPoints.length - 1) {
+          currentIndex++
+          scrollToSection(currentIndex)
+        }
+      } else {
+        // اسکرول به بالا
+        if (currentIndex > 0) {
+          currentIndex--
+          scrollToSection(currentIndex)
+        }
+      }
+    }
+
+    const scrollToSection = (index: number) => {
+      if (isScrolling) return
+
+      isScrolling = true
+      const targetY = snapPoints[index]
+
+      gsap.to(window, {
+        scrollTo: {
+          y: targetY,
+          autoKill: false,
+        },
+        duration: 1,
+        ease: "power2.inOut",
+        onComplete: () => {
+          isScrolling = false
+        },
+      })
+    }
+
+    // محاسبه مجدد موقعیت‌ها در صورت تغییر اندازه صفحه
+    const updateSnapPoints = () => {
+      snapPoints.forEach((_, index) => {
+        if (sections[index]) {
+          snapPoints[index] = sections[index].offsetTop
+        }
+      })
+    }
+
+    window.addEventListener("wheel", handleWheel, { passive: false })
+    window.addEventListener("resize", updateSnapPoints)
+
+    // پیدا کردن سکشن فعلی بر اساس موقعیت اسکرول
+    const updateCurrentIndex = () => {
+      if (isScrolling) return
+
+      const scrollY = window.scrollY
+      const viewportCenter = scrollY + window.innerHeight / 2
+
+      // پیدا کردن نزدیک‌ترین سکشن
+      let closestIndex = 0
+      let minDistance = Math.abs(snapPoints[0] - viewportCenter)
+
+      snapPoints.forEach((point, index) => {
+        const distance = Math.abs(point - viewportCenter)
+        if (distance < minDistance) {
+          minDistance = distance
+          closestIndex = index
+        }
+      })
+
+      currentIndex = closestIndex
+    }
+
+    // مقداردهی اولیه
+    updateCurrentIndex()
+
+    window.addEventListener("scroll", updateCurrentIndex, { passive: true })
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel)
+      window.removeEventListener("resize", updateSnapPoints)
+      window.removeEventListener("scroll", updateCurrentIndex)
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+    }
+  }, [])
+
   return (
-    <>
-      <div className="wrapper grid grid-cols-2 h-[calc(100vh-5rem)]">
+    <div ref={containerRef}>
+      <div
+        ref={(el) => {
+          if (el) sectionsRef.current[0] = el
+        }}
+        className="wrapper grid grid-cols-2 h-screen pt-20"
+      >
         <div className="h-full flex justify-center items-center">
           <div>
             <h1 className="text-8xl font-black font-morabba-bold">پلاس</h1>
-            <h2 className="text-5xl font-bold mt-9 font-morabba-medium leading-snug">بزرگ ترین شرکت <br /> برنامه نویسی مشهد</h2>
+            <h2 className="text-5xl font-bold mt-9 font-morabba-medium leading-snug">
+              بزرگ ترین شرکت <br /> برنامه نویسی مشهد
+            </h2>
             <p className="mt-6 leading-loose">
-              لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br /> و با استفاده از طراحان گرافیک است
+              لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br /> و
+              با استفاده از طراحان گرافیک است
             </p>
           </div>
         </div>
@@ -19,12 +144,186 @@ function Page() {
         </div>
       </div>
 
-      <CooperationBar />
-
-      <div className="wrapper">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quidem maiores nulla, incidunt cumque id nesciunt fugit. Sed nihil, saepe debitis excepturi, amet hic exercitationem repellendus blanditiis eum neque cumque. Quibusdam recusandae explicabo doloribus nisi quisquam rem labore eum. Minima a praesentium distinctio, repellat ullam placeat esse dicta tenetur adipisci cupiditate quae nesciunt accusamus animi voluptates laboriosam hic. Ea minima aliquid fuga, soluta sit sint excepturi quisquam nemo et necessitatibus aut quas tempore reprehenderit temporibus dolorem, praesentium ut sequi expedita sunt. Ratione recusandae ad earum voluptatem quas necessitatibus vitae facere, quo, facilis dolores repellat, accusamus sunt rerum quis. Iste cum quia impedit atque nobis voluptate odio, quo ullam, omnis, sit nam repellendus quae facilis culpa explicabo? Aliquam eius optio itaque dolorem accusamus quis. Natus, fuga saepe quasi debitis commodi, perferendis dicta nisi placeat est error earum? Nulla ab ratione sint et. Consequatur omnis placeat iste quidem ducimus alias delectus quis animi nihil dolor temporibus nulla ad laboriosam quaerat ab ipsum quasi commodi nobis quibusdam, minus quas corporis, eius reiciendis? Iusto exercitationem, tempore soluta enim dolore, dolorem aperiam eligendi, sequi praesentium expedita sed dolor modi. Quas natus consequuntur numquam voluptatibus architecto quia, incidunt earum veniam molestias praesentium tempora eos minima debitis, ab consequatur hic exercitationem sequi nostrum quis ratione! Consequuntur eos iure fugiat perferendis, tenetur tempore itaque distinctio eaque vero et officiis reprehenderit dignissimos aspernatur necessitatibus architecto molestias obcaecati, blanditiis neque suscipit est debitis! Dolorem maxime expedita necessitatibus ut debitis minima quasi itaque quae doloribus velit, inventore, id voluptas praesentium voluptate corporis quidem voluptatum et quibusdam deleniti. Laborum dolorem ut quam, rem itaque velit, architecto doloremque, culpa est dolorum deserunt officiis commodi unde vero magnam nulla quisquam incidunt inventore sint facilis aliquam! Iure quo, sint nam veritatis consequuntur similique id animi tenetur ea dolor error! Nam harum tempore deleniti aperiam adipisci suscipit laudantium reiciendis dignissimos provident maxime placeat nemo, eum impedit perferendis quos quaerat atque corrupti ratione in porro ipsam rem vero omnis voluptatem. Nam veritatis molestias corrupti molestiae pariatur. Expedita tempora consectetur quod blanditiis harum natus numquam, ipsum minima, itaque mollitia velit inventore culpa voluptate eum voluptatum veniam saepe recusandae doloremque corporis, aliquid sit. Modi, ullam debitis et officiis aspernatur natus officia commodi ex. Tempora similique maxime, nobis dolor, adipisci atque voluptas molestiae aut libero modi qui rerum laborum eos, deserunt esse dignissimos voluptate iure delectus quis incidunt exercitationem non doloremque? Dolores perspiciatis quis ex libero blanditiis culpa vel sed rerum distinctio quibusdam, nemo impedit dicta cum pariatur soluta ipsum doloremque? Eaque itaque quaerat modi quos accusamus eos laborum magnam. Molestias facere accusantium tenetur quos at voluptatibus, eum fuga nam cum modi quaerat, minima vitae consequatur non nihil voluptates architecto provident voluptate maxime? Magnam expedita corrupti cupiditate quibusdam assumenda eum molestiae ipsam doloribus atque quas quidem deserunt voluptate autem facere, officiis dicta tenetur repudiandae itaque suscipit delectus perspiciatis illo provident saepe. Suscipit eveniet accusantium illo cumque. Corrupti earum amet, quibusdam necessitatibus perspiciatis nemo tempore voluptatum placeat debitis aperiam distinctio dolorum exercitationem adipisci quam omnis. Voluptate, totam qui. Ad sunt aliquam perspiciatis sint, provident quisquam quaerat facere repellendus vel, tempora nihil dolorum rem. Eius vero nesciunt doloremque inventore ex rem fuga distinctio, id similique impedit sapiente incidunt, fugit odio omnis quod quae ipsam quis minima perferendis atque dignissimos debitis nostrum! Beatae, nesciunt quidem! Officiis magni vitae cumque iure atque! Soluta et consequuntur ipsum a animi commodi culpa nisi dolor, quisquam accusantium dignissimos error alias deserunt voluptatum veritatis itaque perspiciatis sint mollitia voluptatibus expedita nesciunt? Earum, voluptatibus! Quia ab similique debitis magnam eligendi deleniti numquam voluptatibus non voluptates iusto asperiores, labore distinctio officia dolorem, fuga necessitatibus reprehenderit, tempore error quam rem cumque nisi eius est? Alias eveniet nobis beatae, dolor exercitationem officia sit unde aliquid. Eligendi exercitationem quam, tenetur quae sequi perferendis et animi maxime velit ipsam, vel voluptatum veniam adipisci recusandae architecto quisquam in quas hic assumenda! Modi ipsum architecto distinctio odio repellendus debitis possimus deleniti neque omnis nemo quod quas ratione doloremque minima voluptas, vero ipsam exercitationem illum optio similique ex nulla atque? Laborum rerum, minus provident ut optio, hic cum, dolorem ipsa nostrum quidem consequatur accusamus ducimus architecto dolore sed iste incidunt ab repellendus blanditiis mollitia. Facilis adipisci, eligendi, sint voluptate explicabo incidunt vitae commodi similique dolor quis tempore fugiat corporis consectetur neque tempora deserunt animi iusto doloribus voluptatem quas! Ex doloremque deserunt suscipit esse delectus. Nisi animi possimus consequatur modi quis officia cupiditate voluptatibus! Saepe quia officia obcaecati consequatur nemo hic magni! Error quis fuga id illum? Incidunt repellendus perspiciatis porro enim omnis a in obcaecati maxime possimus, consectetur quae eius est suscipit fugiat dolores neque magnam laboriosam recusandae optio provident, eos minus voluptates nostrum molestiae. Quos assumenda tempora dignissimos sed sint eligendi, delectus aspernatur. Dolorem, perspiciatis atque fugit earum alias incidunt sed doloribus corporis possimus? Rerum delectus, suscipit nesciunt minima quo distinctio quia inventore dolor provident nostrum molestias sapiente aliquam velit temporibus expedita beatae similique, labore iure ea officia nobis eius, hic a! Necessitatibus tenetur vel quam? Ea possimus beatae, earum, expedita, reiciendis amet dolore recusandae nemo tempore perspiciatis adipisci quos ut debitis officiis veniam laboriosam. Perferendis sapiente fugit fugiat ratione consequuntur, optio, iusto voluptate dolor animi accusamus deserunt similique vitae dolores enim doloribus. Quod sunt aut quidem, repellendus eaque earum ad at temporibus numquam esse, sed eveniet vero quis ex minima quaerat ipsam ab exercitationem quos neque dolore laborum necessitatibus modi nostrum. Distinctio totam maiores, rerum atque culpa, voluptatibus accusamus suscipit cupiditate placeat voluptate illo deleniti, quas eaque facere perspiciatis. Dolorem nulla accusantium quae illum autem vitae doloremque labore sed magnam tenetur deserunt sapiente odit minima molestias, accusamus commodi placeat cupiditate harum quod deleniti magni nostrum doloribus voluptatum? Doloribus reprehenderit id libero, culpa nam aut architecto dolore recusandae et sit perspiciatis obcaecati exercitationem, repellendus aspernatur animi inventore, amet nobis. Quis facere ipsam alias ratione quibusdam libero laborum. Ipsam quis odio esse iusto nobis. Incidunt asperiores aliquid perspiciatis aspernatur optio deserunt, quidem voluptate dicta et quam ut modi sit amet. Numquam quae laudantium voluptatibus accusamus sunt rerum quas! Quas fuga nostrum nobis cum doloribus eligendi beatae quos temporibus!
+      <div
+        ref={(el) => {
+          if (el) sectionsRef.current[1] = el
+        }}
+        className="wrapper h-screen pt-20">
+        <CooperationBar />
+        <div className="grid grid-cols-2 h-[calc(100%-6.5rem)]">
+          <div className="h-full flex justify-center items-center">
+            <div className="w-3/4">
+              <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
+              <p className="leading-loose mt-6">
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
+                استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
+                در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
+                نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد،
+                کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان
+                جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای
+                طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان
+                فارسی ایجاد کرد، در این صورت می توان امید داشت.
+              </p>
+            </div>
+          </div>
+          <div className="h-full flex justify-center items-center">
+            <div className="size-96 rounded-lg bg-card"></div>
+          </div>
+        </div>
       </div>
-    </>
+      <div
+        ref={(el) => {
+          if (el) sectionsRef.current[2] = el
+        }}
+        className="wrapper h-screen pt-20 grid grid-cols-2"
+      >
+        <div className="h-full flex justify-center items-center">
+          <div className="size-96 rounded-lg bg-card"></div>
+        </div>
+        <div className="h-full flex justify-center items-center">
+          <div className="w-3/4">
+            <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
+            <p className="leading-loose mt-6">
+              لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
+              استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
+              در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
+              نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد،
+              کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان
+              جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای
+              طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان
+              فارسی ایجاد کرد، در این صورت می توان امید داشت.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        ref={(el) => {
+          if (el) sectionsRef.current[3] = el
+        }}
+        className="wrapper h-screen pt-20 grid grid-cols-2"
+      >
+        <div className="h-full flex justify-center items-center">
+          <div className="w-3/4">
+            <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
+            <p className="leading-loose mt-6">
+              لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
+              استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
+              در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
+              نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد،
+              کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان
+              جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای
+              طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان
+              فارسی ایجاد کرد، در این صورت می توان امید داشت.
+            </p>
+          </div>
+        </div>
+        <div className="h-full flex justify-center items-center">
+          <div className="size-96 rounded-lg bg-card"></div>
+        </div>
+      </div>
+      <div
+        ref={(el) => {
+          if (el) sectionsRef.current[4] = el
+        }}
+        className="wrapper h-screen pt-23 pb-6 flex flex-col items-center justify-center gap-12"
+      >
+        <h3 className="text-5xl font-bold font-morabba-medium">پکیج های ما</h3>
+        <div className="grid grid-cols-4 gap-6 flex-1">
+          <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+            <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+              وب اپلیکیشن
+            </p>
+            <p className="text-center mt-6 text-2xl">
+              از {(30_000_000).toLocaleString("fa")} تومان
+            </p>
+            <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+            </ul>
+            <Button>
+              <span>خرید</span>
+              <CheckIcon />
+            </Button>
+          </div>
+          <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+            <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+              وب اپلیکیشن
+            </p>
+            <p className="text-center mt-6 text-2xl">
+              از {(30_000_000).toLocaleString("fa")} تومان
+            </p>
+            <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+            </ul>
+            <Button>
+              <span>خرید</span>
+              <CheckIcon />
+            </Button>
+          </div>
+          <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+            <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+              وب اپلیکیشن
+            </p>
+            <p className="text-center mt-6 text-2xl">
+              از {(30_000_000).toLocaleString("fa")} تومان
+            </p>
+            <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+            </ul>
+            <Button>
+              <span>خرید</span>
+              <CheckIcon />
+            </Button>
+          </div>
+          <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+            <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+              وب اپلیکیشن
+            </p>
+            <p className="text-center mt-6 text-2xl">
+              از {(30_000_000).toLocaleString("fa")} تومان
+            </p>
+            <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+              <li>
+                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+              </li>
+            </ul>
+            <Button>
+              <span>خرید</span>
+              <CheckIcon />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

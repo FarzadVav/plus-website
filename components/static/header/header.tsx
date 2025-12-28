@@ -1,12 +1,12 @@
 import Link from "next/link"
 import Image from "next/image"
+import { HeadsetIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { HeadsetIcon } from "lucide-react"
 
 function Header() {
   return (
-    <header className="h-20 flex items-center gap-6 wrapper sticky top-0">
+    <header className="h-20 bg-background/10 backdrop-blur-sm flex items-center gap-6 wrapper sticky top-0 z-40">
       <Image src="/logo.svg" alt="logo" width={36} height={36} />
 
       <nav className="flex items-center gap-3 mx-auto">

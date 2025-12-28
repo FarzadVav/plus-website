@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fa" dir="rtl">
-      <body className="antialiased">
+      <body className="antialiased dark">
         <Header />
         {children}
       </body>

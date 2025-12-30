@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 function Header() {
   return (
     <header className="h-20 bg-background/10 backdrop-blur-sm flex items-center gap-6 wrapper sticky top-0 z-40">
-      <Image src="/logo.svg" alt="logo" width={36} height={36} />
+      <Image className="fill-primary" src="/logo.svg" alt="logo" width={36} height={36} />
 
       <nav className="flex items-center gap-3 mx-auto">
         <Link href="">

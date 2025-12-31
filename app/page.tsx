@@ -50,6 +50,10 @@ function Page() {
   // ref برای تابع scrollToSection که از Context استفاده می‌کنه
   const scrollToSectionRef = useRef<((index: number) => void) | null>(null)
 
+  // ref برای لوگو در فوتر
+  const footerLogoRef = useRef<HTMLImageElement>(null)
+  const footerRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!containerRef.current) return
 
@@ -346,6 +350,49 @@ function Page() {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
       // پاک کردن تابع از window
       delete (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection
+    }
+  }, [])
+
+  // انیمیشن حرکت لوگو با ماوس
+  useEffect(() => {
+    const footer = footerRef.current
+    const logo = footerLogoRef.current
+    if (!footer || !logo) return
+
+    // GSAP quickTo برای انیمیشن نرم و روان
+    const xTo = gsap.quickTo(logo, "x", { duration: 1.2, ease: "elastic.out(1, 0.3)" })
+    const yTo = gsap.quickTo(logo, "y", { duration: 1.2, ease: "elastic.out(1, 0.3)" })
+    const rotateTo = gsap.quickTo(logo, "rotation", { duration: 1.5, ease: "elastic.out(1, 0.5)" })
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = footer.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+
+      // محاسبه فاصله ماوس از مرکز
+      const deltaX = (e.clientX - centerX) / 8
+      const deltaY = (e.clientY - centerY) / 8
+
+      // زاویه چرخش بر اساس حرکت ماوس
+      const rotation = (e.clientX - centerX) / 30
+
+      xTo(deltaX)
+      yTo(deltaY)
+      rotateTo(rotation)
+    }
+
+    const handleMouseLeave = () => {
+      xTo(0)
+      yTo(0)
+      rotateTo(0)
+    }
+
+    footer.addEventListener("mousemove", handleMouseMove)
+    footer.addEventListener("mouseleave", handleMouseLeave)
+
+    return () => {
+      footer.removeEventListener("mousemove", handleMouseMove)
+      footer.removeEventListener("mouseleave", handleMouseLeave)
     }
   }, [])
 
@@ -1022,10 +1069,20 @@ function Page() {
       <div
         id="footer"
         ref={(el) => {
-          if (el) sectionsRef.current[11] = el
+          if (el) {
+            sectionsRef.current[11] = el
+            footerRef.current = el
+          }
         }}
         className="wrapper h-screen pt-26 flex flex-col justify-center items-center relative">
-        <Image className="absolute -z-10 opacity-10 blur-sm" src="/logo-white.svg" alt="logo" width={500} height={500} />
+        <Image
+          ref={footerLogoRef}
+          className="absolute -z-10 opacity-10 blur-sm transition-transform will-change-transform"
+          src="/logo-white.svg"
+          alt="logo"
+          width={500}
+          height={500}
+        />
 
         <p className="text-center w-1/2 leading-loose">
           لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است

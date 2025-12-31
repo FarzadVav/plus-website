@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { HeadsetIcon } from "lucide-react"
+import { HeadsetIcon, MailIcon, PhoneIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // mapping بین لینک‌ها و index سکشن‌ها - باید دقیقا با ترتیب و نام سکشن‌های صفحه برابر باشد
 const sectionMap: Record<string, number> = {
@@ -107,9 +115,50 @@ function Header() {
         </Button>
       </nav>
 
-      <Button size={"icon"} variant={"outline"}>
-        <HeadsetIcon />
-      </Button>
+      <DropdownMenu dir="rtl">
+        <DropdownMenuTrigger asChild>
+          <Button size={"icon"} variant={"outline"}>
+            <HeadsetIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="end" className="w-56">
+          <DropdownMenuLabel>تماس با ما</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a href="mailto:info@plus.com" className="flex items-center gap-2 w-full">
+              <MailIcon className="size-4" />
+              <span>info@plus.com</span>
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a href="tel:09123456789" className="flex items-center gap-2 w-full">
+              <PhoneIcon className="size-4" />
+              <span>09123456789</span>
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel>شبکه‌های اجتماعی</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a href="#" className="flex items-center gap-2 w-full">
+              <Image src="/instagram.png" alt="instagram" width={20} height={20} />
+              <span>اینستاگرام</span>
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a href="#" className="flex items-center gap-2 w-full">
+              <Image src="/telegram.png" alt="telegram" width={20} height={20} />
+              <span>تلگرام</span>
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a href="#" className="flex items-center gap-2 w-full">
+              <Image src="/linkedin.png" alt="linkedin" width={20} height={20} />
+              <span>لینکدین</span>
+            </a>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header >
   )
 }

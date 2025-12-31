@@ -387,12 +387,24 @@ function Page() {
       rotateTo(0)
     }
 
+    const handleMouseDown = () => {
+      gsap.to(logo, { opacity: 0.25, duration: 0.3, ease: "power2.out" })
+    }
+
+    const handleMouseUp = () => {
+      gsap.to(logo, { opacity: 0.1, duration: 0.3, ease: "power2.out" })
+    }
+
     footer.addEventListener("mousemove", handleMouseMove)
     footer.addEventListener("mouseleave", handleMouseLeave)
+    footer.addEventListener("mousedown", handleMouseDown)
+    footer.addEventListener("mouseup", handleMouseUp)
 
     return () => {
       footer.removeEventListener("mousemove", handleMouseMove)
       footer.removeEventListener("mouseleave", handleMouseLeave)
+      footer.removeEventListener("mousedown", handleMouseDown)
+      footer.removeEventListener("mouseup", handleMouseUp)
     }
   }, [])
 
@@ -1077,7 +1089,8 @@ function Page() {
         className="wrapper h-screen pt-26 flex flex-col justify-center items-center relative">
         <Image
           ref={footerLogoRef}
-          className="absolute -z-10 opacity-10 blur-sm transition-transform will-change-transform"
+          className="absolute -z-10 blur-sm will-change-transform"
+          style={{ opacity: 0.1 }}
           src="/logo-white.svg"
           alt="logo"
           width={500}

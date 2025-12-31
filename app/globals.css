@@ -150,7 +150,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-yekan-bakh;
+    @apply bg-background text-foreground font-yekan-bakh select-none;
   }
 }
 

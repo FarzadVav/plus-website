@@ -19,9 +19,36 @@ import Image from "next/image"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
+// داده‌های نمونه کار
+const portfolioItems = [
+  {
+    title: "بیوتی پلاس",
+    description: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد."
+  },
+  {
+    title: "اپلیکیشن فروشگاهی",
+    description: "کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد."
+  },
+  {
+    title: "سامانه مدیریت",
+    description: "در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد."
+  }
+]
+
 function Page() {
   const containerRef = useRef<HTMLDivElement>(null)
   const sectionsRef = useRef<HTMLDivElement[]>([])
+  const portfolioWrapperRef = useRef<HTMLDivElement>(null)
+  const portfolioContainerRef = useRef<HTMLDivElement>(null)
+  const portfolioPanelsRef = useRef<HTMLDivElement[]>([])
+
+  // ایندکس فعلی پنل پورتفولیو (0, 1, 2)
+  const portfolioIndexRef = useRef(0)
+  // آیا در سکشن پورتفولیو هستیم
+  const isInPortfolioRef = useRef(false)
+
+  // ref برای تابع scrollToSection که از Context استفاده می‌کنه
+  const scrollToSectionRef = useRef<((index: number) => void) | null>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -42,25 +69,107 @@ function Page() {
     let currentIndex = 0
     let isScrolling = false
 
+    // انیمیشن برای اسکرول افقی پورتفولیو
+    const scrollPortfolioToPanel = (panelIndex: number) => {
+      if (!portfolioContainerRef.current) return
+
+      isScrolling = true
+      const panelWidth = window.innerWidth
+
+      // چک کردن RTL - در RTL جهت transform برعکس میشه
+      const isRTL = document.documentElement.dir === 'rtl'
+      const direction = isRTL ? 1 : -1
+
+      gsap.to(portfolioContainerRef.current, {
+        x: direction * panelIndex * panelWidth,
+        duration: 0.8,
+        ease: "power2.inOut",
+        onComplete: () => {
+          isScrolling = false
+          portfolioIndexRef.current = panelIndex
+        }
+      })
+    }
+
     const scrollToNext = () => {
       if (isScrolling) return
+
+      // چک کردن اینکه آیا در سکشن پورتفولیو هستیم
+      const portfolioSectionIndex = 4
+
+      if (currentIndex === portfolioSectionIndex && isInPortfolioRef.current) {
+        // اگر در سکشن پورتفولیو هستیم، اسکرول افقی بزن
+        if (portfolioIndexRef.current < portfolioItems.length - 1) {
+          scrollPortfolioToPanel(portfolioIndexRef.current + 1)
+          return
+        } else {
+          // آخرین پنل پورتفولیو - برو سکشن بعدی
+          isInPortfolioRef.current = false
+          portfolioIndexRef.current = 0
+        }
+      }
+
       if (currentIndex < snapPoints.length - 1) {
         currentIndex++
         scrollToSection(currentIndex)
+
+        // اطلاع دادن به Header از تغییر سکشن
+        const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
+        window.dispatchEvent(event)
+
+        // اگر وارد سکشن پورتفولیو شدیم
+        if (currentIndex === portfolioSectionIndex) {
+          isInPortfolioRef.current = true
+          portfolioIndexRef.current = 0
+          // ریست کردن موقعیت افقی
+          if (portfolioContainerRef.current) {
+            gsap.set(portfolioContainerRef.current, { x: 0 })
+          }
+        }
       }
     }
 
     const scrollToPrevious = () => {
       if (isScrolling) return
+
+      const portfolioSectionIndex = 4
+
+      if (currentIndex === portfolioSectionIndex && isInPortfolioRef.current) {
+        // اگر در سکشن پورتفولیو هستیم، اسکرول افقی به عقب
+        if (portfolioIndexRef.current > 0) {
+          scrollPortfolioToPanel(portfolioIndexRef.current - 1)
+          return
+        } else {
+          // اولین پنل پورتفولیو - برو سکشن قبلی
+          isInPortfolioRef.current = false
+        }
+      }
+
       if (currentIndex > 0) {
         currentIndex--
         scrollToSection(currentIndex)
+
+        // اطلاع دادن به Header از تغییر سکشن
+        const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
+        window.dispatchEvent(event)
+
+        // اگر از سکشن بعد از پورتفولیو برگشتیم
+        if (currentIndex === portfolioSectionIndex) {
+          isInPortfolioRef.current = true
+          portfolioIndexRef.current = portfolioItems.length - 1
+          // رفتن به آخرین پنل
+          if (portfolioContainerRef.current) {
+            const panelWidth = window.innerWidth
+            const isRTL = document.documentElement.dir === 'rtl'
+            const direction = isRTL ? 1 : -1
+            gsap.set(portfolioContainerRef.current, { x: direction * portfolioIndexRef.current * panelWidth })
+          }
+        }
       }
     }
 
     const handleWheel = (e: WheelEvent) => {
       if (isScrolling) {
-        console.log("isScrolling")
         e.preventDefault()
         return
       }
@@ -120,15 +229,32 @@ function Page() {
         ease: "power2.inOut",
         onComplete: () => {
           isScrolling = false
+          // اطلاع دادن به Header از تغییر سکشن بعد از اسکرول
+          const event = new CustomEvent('sectionChange', { detail: { currentIndex: index } })
+          window.dispatchEvent(event)
         },
       })
     }
+
+    // ذخیره تابع در ref برای استفاده در Context
+    scrollToSectionRef.current = scrollToSection
+
+      // همچنین در window قرار می‌دیم برای دسترسی از Header
+      ; (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection = scrollToSection
 
     // محاسبه مجدد موقعیت‌ها در صورت تغییر اندازه صفحه
     const updateSnapPoints = () => {
       // کمی تاخیر برای اطمینان از اینکه layout به‌روزرسانی شده
       setTimeout(() => {
         snapPoints = calculateSnapPoints()
+
+        // بروزرسانی موقعیت افقی پورتفولیو در صورت resize
+        if (portfolioContainerRef.current && isInPortfolioRef.current) {
+          const panelWidth = window.innerWidth
+          const isRTL = document.documentElement.dir === 'rtl'
+          const direction = isRTL ? 1 : -1
+          gsap.set(portfolioContainerRef.current, { x: direction * portfolioIndexRef.current * panelWidth })
+        }
       }, 100)
     }
 
@@ -166,12 +292,24 @@ function Page() {
       })
 
       currentIndex = bestIndex
+
+      // بروزرسانی وضعیت پورتفولیو
+      if (currentIndex === 4) {
+        isInPortfolioRef.current = true
+      }
+
+      // اطلاع دادن به Header از تغییر سکشن فعلی
+      const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
+      window.dispatchEvent(event)
     }
 
     // مقداردهی اولیه با تاخیر برای اطمینان از رندر کامل
     setTimeout(() => {
       snapPoints = calculateSnapPoints()
       updateCurrentIndex()
+      // اطلاع دادن به Header از سکشن اولیه
+      const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
+      window.dispatchEvent(event)
     }, 100)
 
     window.addEventListener("scroll", updateCurrentIndex, { passive: true })
@@ -182,16 +320,19 @@ function Page() {
       window.removeEventListener("resize", updateSnapPoints)
       window.removeEventListener("scroll", updateCurrentIndex)
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+      // پاک کردن تابع از window
+      delete (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection
     }
   }, [])
 
   return (
     <div ref={containerRef}>
       <div
+        id="home"
         ref={(el) => {
           if (el) sectionsRef.current[0] = el
         }}
-        className="wrapper grid grid-cols-2 h-screen pt-20"
+        className="wrapper grid grid-cols-2 h-screen"
       >
         <div className="h-full flex justify-center items-center">
           <div>
@@ -211,6 +352,7 @@ function Page() {
       </div>
 
       <div
+        id="about"
         ref={(el) => {
           if (el) sectionsRef.current[1] = el
         }}
@@ -239,6 +381,7 @@ function Page() {
       </div>
 
       <div
+        id="about-2"
         ref={(el) => {
           if (el) sectionsRef.current[2] = el
         }}
@@ -265,6 +408,7 @@ function Page() {
       </div>
 
       <div
+        id="about-3"
         ref={(el) => {
           if (el) sectionsRef.current[3] = el
         }}
@@ -290,23 +434,63 @@ function Page() {
         </div>
       </div>
 
+      {/* سکشن نمونه کارها با اسکرول افقی */}
       <div
+        id="portfolio"
         ref={(el) => {
           if (el) sectionsRef.current[4] = el
+          portfolioWrapperRef.current = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="h-screen overflow-hidden"
       >
-        <h3 className="text-5xl font-bold font-morabba-bold">نمونه کار های ما</h3>
-        <div className="flex-1 flex flex-col justify-center items-center gap-6">
-          <div className="size-40 bg-card rounded-full"></div>
-          <p className="text-3xl font-bold font-morabba-medium">بیوتی پلاس</p>
-          <p className="w-3/4 text-center leading-loose">
-            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد، در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-          </p>
+        <div className="h-full pt-26 pb-6 flex flex-col">
+          <h3 className="text-5xl font-bold font-morabba-bold text-center mb-8">نمونه کار های ما</h3>
+
+          {/* کانتینر افقی با overflow hidden */}
+          <div className="flex-1 overflow-hidden">
+            {/* پنل‌های افقی */}
+            <div
+              ref={portfolioContainerRef}
+              className="h-full flex"
+              style={{ width: `${portfolioItems.length * 100}vw` }}
+            >
+              {portfolioItems.map((item, index) => (
+                <div
+                  key={index}
+                  ref={(el) => {
+                    if (el) portfolioPanelsRef.current[index] = el
+                  }}
+                  className="w-screen h-full shrink-0 flex items-center justify-center px-12"
+                >
+                  <div className="flex flex-col items-center gap-6 max-w-4xl">
+                    <div className="size-48 bg-card rounded-full flex items-center justify-center">
+                      <span className="text-6xl font-bold text-muted-foreground">{index + 1}</span>
+                    </div>
+                    <p className="text-3xl font-bold font-morabba-medium">{item.title}</p>
+                    <p className="text-center leading-loose text-muted-foreground">
+                      {item.description}
+                    </p>
+
+                    {/* نشانگر پنل‌ها */}
+                    <div className="flex gap-3 mt-6">
+                      {portfolioItems.map((_, dotIndex) => (
+                        <div
+                          key={dotIndex}
+                          className={`size-3 rounded-full transition-all duration-300 ${dotIndex === index ? 'bg-primary scale-125' : 'bg-muted'
+                            }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <div
+        id="software-packages"
         ref={(el) => {
           if (el) sectionsRef.current[5] = el
         }}
@@ -410,6 +594,7 @@ function Page() {
       </div>
 
       <div
+        id="content-packages"
         ref={(el) => {
           if (el) sectionsRef.current[6] = el
         }}
@@ -513,6 +698,7 @@ function Page() {
       </div>
 
       <div
+        id="bloggers"
         ref={(el) => {
           if (el) sectionsRef.current[7] = el
         }}
@@ -616,6 +802,7 @@ function Page() {
       </div>
 
       <div
+        id="testimonials"
         ref={(el) => {
           if (el) sectionsRef.current[8] = el
         }}
@@ -725,6 +912,7 @@ function Page() {
       </div>
 
       <div
+        id="faq"
         ref={(el) => {
           if (el) sectionsRef.current[9] = el
         }}
@@ -768,6 +956,7 @@ function Page() {
       </div>
 
       <div
+        id="contact"
         ref={(el) => {
           if (el) sectionsRef.current[10] = el
         }}
@@ -807,6 +996,7 @@ function Page() {
       </div>
 
       <div
+        id="footer"
         ref={(el) => {
           if (el) sectionsRef.current[11] = el
         }}

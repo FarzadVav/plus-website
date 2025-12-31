@@ -111,21 +111,13 @@ function Page() {
 
       if (currentIndex < snapPoints.length - 1) {
         currentIndex++
-        scrollToSection(currentIndex)
 
-        // اطلاع دادن به Header از تغییر سکشن
-        const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
-        window.dispatchEvent(event)
-
-        // اگر وارد سکشن پورتفولیو شدیم
+        // اگر قرار است وارد سکشن پورتفولیو شویم، از اول شروع کن
         if (currentIndex === portfolioSectionIndex) {
-          isInPortfolioRef.current = true
           portfolioIndexRef.current = 0
-          // ریست کردن موقعیت افقی
-          if (portfolioContainerRef.current) {
-            gsap.set(portfolioContainerRef.current, { x: 0 })
-          }
         }
+
+        scrollToSection(currentIndex)
       }
     }
 
@@ -147,24 +139,13 @@ function Page() {
 
       if (currentIndex > 0) {
         currentIndex--
-        scrollToSection(currentIndex)
 
-        // اطلاع دادن به Header از تغییر سکشن
-        const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
-        window.dispatchEvent(event)
-
-        // اگر از سکشن بعد از پورتفولیو برگشتیم
+        // اگر قرار است به سکشن پورتفولیو برگردیم، از آخر شروع کن
         if (currentIndex === portfolioSectionIndex) {
-          isInPortfolioRef.current = true
           portfolioIndexRef.current = portfolioItems.length - 1
-          // رفتن به آخرین پنل
-          if (portfolioContainerRef.current) {
-            const panelWidth = window.innerWidth
-            const isRTL = document.documentElement.dir === 'rtl'
-            const direction = isRTL ? 1 : -1
-            gsap.set(portfolioContainerRef.current, { x: direction * portfolioIndexRef.current * panelWidth })
-          }
         }
+
+        scrollToSection(currentIndex)
       }
     }
 
@@ -202,7 +183,7 @@ function Page() {
       }
     }
 
-    const scrollToSection = (index: number) => {
+    const scrollToSection = (index: number, fromNavClick = false) => {
       if (isScrolling) return
       if (index < 0 || index >= snapPoints.length) return
 
@@ -229,6 +210,36 @@ function Page() {
         ease: "power2.inOut",
         onComplete: () => {
           isScrolling = false
+
+          // آپدیت کردن currentIndex - مهم برای اینکه scroll بعدی درست کار کنه
+          currentIndex = index
+
+          // مدیریت وضعیت پورتفولیو
+          const portfolioSectionIndex = 4
+          if (index === portfolioSectionIndex) {
+            isInPortfolioRef.current = true
+
+            // اگر از nav کلیک شده، به اول پورتفولیو برو
+            if (fromNavClick) {
+              portfolioIndexRef.current = 0
+            }
+
+            // تنظیم موقعیت x بر اساس portfolioIndexRef فعلی
+            if (portfolioContainerRef.current) {
+              const panelWidth = window.innerWidth
+              const isRTL = document.documentElement.dir === 'rtl'
+              const direction = isRTL ? 1 : -1
+              gsap.set(portfolioContainerRef.current, { x: direction * portfolioIndexRef.current * panelWidth })
+            }
+          } else {
+            // اگر از سکشن پورتفولیو خارج شدیم
+            isInPortfolioRef.current = false
+            portfolioIndexRef.current = 0
+            if (portfolioContainerRef.current) {
+              gsap.set(portfolioContainerRef.current, { x: 0 })
+            }
+          }
+
           // اطلاع دادن به Header از تغییر سکشن بعد از اسکرول
           const event = new CustomEvent('sectionChange', { detail: { currentIndex: index } })
           window.dispatchEvent(event)
@@ -240,7 +251,8 @@ function Page() {
     scrollToSectionRef.current = scrollToSection
 
       // همچنین در window قرار می‌دیم برای دسترسی از Header
-      ; (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection = scrollToSection
+      // fromNavClick = true برای کلیک‌های از هدر
+      ; (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection = (index: number) => scrollToSection(index, true)
 
     // محاسبه مجدد موقعیت‌ها در صورت تغییر اندازه صفحه
     const updateSnapPoints = () => {
@@ -294,8 +306,20 @@ function Page() {
       currentIndex = bestIndex
 
       // بروزرسانی وضعیت پورتفولیو
-      if (currentIndex === 4) {
-        isInPortfolioRef.current = true
+      const portfolioSectionIndex = 4
+      if (currentIndex === portfolioSectionIndex) {
+        if (!isInPortfolioRef.current) {
+          isInPortfolioRef.current = true
+        }
+      } else {
+        // اگر از سکشن پورتفولیو خارج شدیم
+        if (isInPortfolioRef.current) {
+          isInPortfolioRef.current = false
+          portfolioIndexRef.current = 0
+          if (portfolioContainerRef.current) {
+            gsap.set(portfolioContainerRef.current, { x: 0 })
+          }
+        }
       }
 
       // اطلاع دادن به Header از تغییر سکشن فعلی

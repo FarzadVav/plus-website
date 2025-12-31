@@ -7,6 +7,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import HeroCarousel from "@/components/static/heroCarousel/heroCarousel"
 import CooperationBar from "@/components/static/cooperationBar/cooperationBar"
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -18,6 +26,50 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from
 import Image from "next/image"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+
+// داده‌های سوالات متداول
+const faqItems = [
+  {
+    id: 1,
+    question: "سوال 1",
+    answer: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است."
+  },
+  {
+    id: 2,
+    question: "سوال 2",
+    answer: "کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد."
+  },
+  {
+    id: 3,
+    question: "سوال 3",
+    answer: "در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد."
+  },
+  {
+    id: 4,
+    question: "سوال 4",
+    answer: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است."
+  },
+  {
+    id: 5,
+    question: "سوال 5",
+    answer: "کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد."
+  },
+  {
+    id: 6,
+    question: "سوال 6",
+    answer: "در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد."
+  },
+  {
+    id: 7,
+    question: "سوال 7",
+    answer: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است."
+  },
+  {
+    id: 8,
+    question: "سوال 8",
+    answer: "کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد."
+  },
+]
 
 // داده‌های نمونه کار
 const portfolioItems = [
@@ -1003,38 +1055,24 @@ function Page() {
       >
         <h3 className="text-5xl font-bold font-morabba-medium">سوالات متداول</h3>
         <div className="w-full grid grid-cols-2 gap-6 flex-1">
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 1</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 2</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 3</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 4</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 5</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 6</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 7</span>
-            <ArrowLeftIcon />
-          </Button>
-          <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
-            <span>سوال 8</span>
-            <ArrowLeftIcon />
-          </Button>
+          {faqItems.map((item) => (
+            <Dialog key={item.id}>
+              <DialogTrigger asChild>
+                <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
+                  <span>{item.question}</span>
+                  <ArrowLeftIcon />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{item.question}</DialogTitle>
+                  <DialogDescription className="leading-loose mt-3">
+                    {item.answer}
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          ))}
         </div>
       </div>
 

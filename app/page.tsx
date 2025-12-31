@@ -1,12 +1,21 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { ArrowLeftIcon, CheckIcon, FileIcon, MailIcon, PhoneIcon, TextAlignCenterIcon, UserIcon } from "lucide-react"
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-cards';
+import 'swiper/css/effect-coverflow';
+
 import { gsap } from "gsap"
+import Image from "next/image"
+import { useEffect, useRef } from "react"
+import { Button } from "@/components/ui/button"
+import { Swiper, SwiperSlide } from "swiper/react"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
-
-import { Button } from "@/components/ui/button"
+import { EffectCards, EffectCoverflow, Pagination } from "swiper/modules"
+import CooperationBar from "@/components/static/cooperationBar/cooperationBar"
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
+import { ArrowLeftIcon, CheckIcon, FileIcon, MailIcon, PhoneIcon, TextAlignCenterIcon, UserIcon } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -15,15 +24,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import HeroCarousel from "@/components/static/heroCarousel/heroCarousel"
-import CooperationBar from "@/components/static/cooperationBar/cooperationBar"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { EffectCoverflow, Pagination } from "swiper/modules"
-
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/pagination';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
-import Image from "next/image"
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
@@ -112,6 +112,9 @@ function Page() {
     const sections = sectionsRef.current.filter(Boolean)
     if (sections.length === 0) return
 
+    // حداقل عرض صفحه برای فعال‌سازی انیمیشن‌های scroll navigation
+    const MIN_WIDTH_FOR_SCROLL_NAV = 1024
+
     // محاسبه موقعیت هر سکشن
     const calculateSnapPoints = () => {
       return sections.map((section) => {
@@ -124,6 +127,7 @@ function Page() {
 
     let currentIndex = 0
     let isScrolling = false
+    let isScrollNavEnabled = window.innerWidth >= MIN_WIDTH_FOR_SCROLL_NAV
 
     // انیمیشن برای اسکرول افقی پورتفولیو
     const scrollPortfolioToPanel = (panelIndex: number) => {
@@ -206,6 +210,9 @@ function Page() {
     }
 
     const handleWheel = (e: WheelEvent) => {
+      // فقط در صورتی که scroll nav فعال باشد
+      if (!isScrollNavEnabled) return
+
       if (isScrolling) {
         e.preventDefault()
         return
@@ -221,6 +228,9 @@ function Page() {
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // فقط در صورتی که scroll nav فعال باشد
+      if (!isScrollNavEnabled) return
+
       // کلیدهای اسکرول: Arrow Down, Arrow Up, Page Down, Page Up, Space (با Shift برای بالا)
       if (
         e.key === "ArrowDown" ||
@@ -240,6 +250,9 @@ function Page() {
     }
 
     const scrollToSection = (index: number, fromNavClick = false) => {
+      // فقط در صورتی که scroll nav فعال باشد
+      if (!isScrollNavEnabled) return
+
       if (isScrolling) return
       if (index < 0 || index >= snapPoints.length) return
 
@@ -316,8 +329,21 @@ function Page() {
       setTimeout(() => {
         snapPoints = calculateSnapPoints()
 
-        // بروزرسانی موقعیت افقی پورتفولیو در صورت resize
-        if (portfolioContainerRef.current && isInPortfolioRef.current) {
+        // بررسی فعال یا غیرفعال بودن scroll nav
+        const wasEnabled = isScrollNavEnabled
+        isScrollNavEnabled = window.innerWidth >= MIN_WIDTH_FOR_SCROLL_NAV
+
+        // اگر غیرفعال شد، پورتفولیو را ریست کن
+        if (wasEnabled && !isScrollNavEnabled) {
+          isInPortfolioRef.current = false
+          portfolioIndexRef.current = 0
+          if (portfolioContainerRef.current) {
+            gsap.set(portfolioContainerRef.current, { x: 0 })
+          }
+        }
+
+        // بروزرسانی موقعیت افقی پورتفولیو در صورت resize (فقط در حالت فعال)
+        if (isScrollNavEnabled && portfolioContainerRef.current && isInPortfolioRef.current) {
           const panelWidth = window.innerWidth
           const isRTL = document.documentElement.dir === 'rtl'
           const direction = isRTL ? 1 : -1
@@ -332,6 +358,9 @@ function Page() {
 
     // پیدا کردن سکشن فعلی بر اساس موقعیت اسکرول
     const updateCurrentIndex = () => {
+      // فقط در صورتی که scroll nav فعال باشد
+      if (!isScrollNavEnabled) return
+
       if (isScrolling) return
 
       const scrollY = window.scrollY
@@ -386,10 +415,13 @@ function Page() {
     // مقداردهی اولیه با تاخیر برای اطمینان از رندر کامل
     setTimeout(() => {
       snapPoints = calculateSnapPoints()
-      updateCurrentIndex()
-      // اطلاع دادن به Header از سکشن اولیه
-      const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
-      window.dispatchEvent(event)
+      isScrollNavEnabled = window.innerWidth >= MIN_WIDTH_FOR_SCROLL_NAV
+      if (isScrollNavEnabled) {
+        updateCurrentIndex()
+        // اطلاع دادن به Header از سکشن اولیه
+        const event = new CustomEvent('sectionChange', { detail: { currentIndex } })
+        window.dispatchEvent(event)
+      }
     }, 100)
 
     window.addEventListener("scroll", updateCurrentIndex, { passive: true })
@@ -467,22 +499,37 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[0] = el
         }}
-        className="wrapper grid grid-cols-2 h-screen"
+        className="wrapper grid grid-cols-1 lg:grid-cols-2 lg:h-screen max-lg:mt-10"
       >
-        <div className="h-full flex justify-center items-center">
+        <div className="lg:h-full flex justify-center items-center">
           <div>
-            <h1 className="text-8xl font-black font-morabba-bold">پلاس</h1>
-            <h2 className="text-5xl font-bold mt-9 font-morabba-medium leading-snug">
+            <h1 className="text-5xl lg:text-8xl font-black font-morabba-bold max-lg:text-center max-lg:mt-12">پلاس</h1>
+            <h2 className="heading mt-9 max-lg:text-center">
               بزرگ ترین شرکت <br /> برنامه نویسی مشهد
             </h2>
-            <p className="mt-6 leading-loose">
+            <p className="mt-6 leading-loose max-lg:text-center">
               لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br /> و
               با استفاده از طراحان گرافیک است
             </p>
           </div>
         </div>
-        <div className="h-full flex justify-center items-center">
-          <HeroCarousel />
+        <div className="lg:h-full flex justify-center items-center max-lg:row-start-1 max-lg:overflow-hidden">
+          <Swiper
+            effect={"cards"}
+            grabCursor={true}
+            modules={[EffectCards]}
+            className="w-50 h-70 lg:w-90 lg:h-110"
+          >
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-100"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-200"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-300"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-400"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-500"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-600"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-700"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-800"></div></SwiperSlide>
+            <SwiperSlide className="rounded-2xl"><div className="size-full rounded-lg bg-neutral-900"></div></SwiperSlide>
+          </Swiper>
         </div>
       </div>
 
@@ -491,13 +538,24 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[1] = el
         }}
-        className="wrapper h-screen pt-20">
-        <CooperationBar />
-        <div className="grid grid-cols-2 h-[calc(100%-6.5rem)]">
-          <div className="h-full flex justify-center items-center">
-            <div className="w-3/4">
-              <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
-              <p className="leading-loose mt-6">
+        className="lg:h-screen lg:pt-20">
+        <div className="bg-card h-26 flex items-center overflow-hidden relative max-lg:mt-20">
+          <div className="absolute left-0 w-max min-w-max flex gap-20 infinite-scroll-x">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <div className="size-20 rounded-lg bg-background" key={index} />
+            ))}
+          </div>
+          <div className="absolute right-[calc(100%-5rem)] w-max min-w-max flex gap-20 infinite-scroll-x">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <div className="size-20 rounded-lg bg-background" key={index} />
+            ))}
+          </div>
+        </div>
+        <div className="wrapper grid grid-cols-1 lg:grid-cols-2 lg:h-[calc(100%-6.5rem)] max-lg:mt-10">
+          <div className="lg:h-full flex justify-center items-center">
+            <div className="lg:w-3/4">
+              <h3 className="heading max-lg:text-center">درباره ما</h3>
+              <p className="leading-loose mt-3 lg:mt-6 max-lg:text-center">
                 لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
                 استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
                 در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
@@ -509,7 +567,7 @@ function Page() {
               </p>
             </div>
           </div>
-          <div className="h-full flex justify-center items-center">
+          <div className="h-full flex justify-center items-center max-lg:mb-5 max-lg:row-start-1">
             <div className="size-96 rounded-lg bg-card"></div>
           </div>
         </div>
@@ -520,15 +578,15 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[2] = el
         }}
-        className="wrapper h-screen pt-20 grid grid-cols-2"
+        className="wrapper lg:h-screen lg:pt-20 grid grid-cols-1 lg:grid-cols-2 max-lg:mt-20"
       >
-        <div className="h-full flex justify-center items-center">
+        <div className="lg:h-full flex justify-center items-center">
           <div className="size-96 rounded-lg bg-card"></div>
         </div>
-        <div className="h-full flex justify-center items-center">
-          <div className="w-3/4">
-            <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
-            <p className="leading-loose mt-6">
+        <div className="h-full flex justify-center items-center mt-5">
+          <div className="lg:w-3/4">
+            <h3 className="heading max-lg:text-center">درباره ما</h3>
+            <p className="leading-loose mt-3 lg:mt-6 max-lg:text-center">
               لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
               استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
               در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
@@ -547,12 +605,12 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[3] = el
         }}
-        className="wrapper h-screen pt-20 grid grid-cols-2"
+        className="wrapper lg:h-screen lg:pt-20 grid grid-cols-1 lg:grid-cols-2 max-lg:mt-20"
       >
-        <div className="h-full flex justify-center items-center">
-          <div className="w-3/4">
-            <h3 className="text-5xl font-bold font-morabba-medium">درباره ما</h3>
-            <p className="leading-loose mt-6">
+        <div className="lg:h-full flex justify-center items-center">
+          <div className="lg:w-3/4">
+            <h3 className="heading max-lg:text-center">درباره ما</h3>
+            <p className="leading-loose mt-3 lg:mt-6 max-lg:text-center">
               لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
               استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله
               در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد
@@ -564,7 +622,7 @@ function Page() {
             </p>
           </div>
         </div>
-        <div className="h-full flex justify-center items-center">
+        <div className="lg:h-full flex justify-center items-center mb-5 max-lg:row-start-1">
           <div className="size-96 rounded-lg bg-card"></div>
         </div>
       </div>
@@ -576,13 +634,13 @@ function Page() {
           if (el) sectionsRef.current[4] = el
           portfolioWrapperRef.current = el
         }}
-        className="h-screen overflow-hidden"
+        className="lg:h-screen overflow-hidden max-lg:mt-20"
       >
-        <div className="h-full pt-26 pb-6 flex flex-col">
-          <h3 className="text-5xl font-bold font-morabba-bold text-center mb-8">نمونه کار های ما</h3>
+        <div className="lg:h-full lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center">
+          <h3 className="heading max-lg:text-center">نمونه کار های ما</h3>
 
           {/* کانتینر افقی با overflow hidden */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden max-lg:hidden">
             {/* پنل‌های افقی */}
             <div
               ref={portfolioContainerRef}
@@ -621,6 +679,31 @@ function Page() {
               ))}
             </div>
           </div>
+
+          {/* Swiper carousel برای موبایل */}
+          <div className="w-full lg:hidden mt-5">
+            <Swiper
+              slidesPerView={1}
+              spaceBetween={20}
+              pagination={true}
+              modules={[Pagination]}
+              className="w-full"
+            >
+              {portfolioItems.map((item, index) => (
+                <SwiperSlide className="pb-12" key={index}>
+                  <div className="flex flex-col items-center gap-6 px-4">
+                    <div className="size-48 bg-card rounded-full flex items-center justify-center">
+                      <span className="text-6xl font-bold text-muted-foreground">{index + 1}</span>
+                    </div>
+                    <p className="text-3xl font-bold font-morabba-medium">{item.title}</p>
+                    <p className="text-center leading-loose text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
       </div>
 
@@ -629,10 +712,50 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[5] = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="wrapper lg:h-screen lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-12 max-lg:mt-20"
       >
-        <h3 className="text-5xl font-bold font-morabba-medium">پکیج های نرم افزاری</h3>
-        <div className="grid grid-cols-4 gap-6 flex-1">
+        <h3 className="heading max-lg:text-center">پکیج های نرم افزاری</h3>
+
+        {/* Swiper carousel برای موبایل */}
+        <div className="w-full lg:hidden mt-5">
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={20}
+            pagination={true}
+            modules={[Pagination]}
+            className="w-full"
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SwiperSlide className="pb-12" key={index}>
+                <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+                  <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+                    وب اپلیکیشن
+                  </p>
+                  <p className="text-center mt-6 text-2xl">
+                    از {(30_000_000).toLocaleString("fa")} تومان
+                  </p>
+                  <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                  </ul>
+                  <Button>
+                    <span>خرید</span>
+                    <CheckIcon />
+                  </Button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        <div className="grid grid-cols-4 gap-6 flex-1 max-lg:hidden">
           <div className="p-6 border-4 border-card rounded-lg flex flex-col">
             <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
               وب اپلیکیشن
@@ -733,10 +856,50 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[6] = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="wrapper lg:h-screen lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-12 max-lg:mt-20"
       >
-        <h3 className="text-5xl font-bold font-morabba-medium">پکیج های تولید محتوا</h3>
-        <div className="grid grid-cols-4 gap-6 flex-1">
+        <h3 className="heading max-lg:text-center">پکیج های تولید محتوا</h3>
+
+        {/* Swiper carousel برای موبایل */}
+        <div className="w-full lg:hidden mt-5">
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={20}
+            pagination={true}
+            modules={[Pagination]}
+            className="w-full"
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SwiperSlide className="pb-12" key={index}>
+                <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+                  <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+                    وب اپلیکیشن
+                  </p>
+                  <p className="text-center mt-6 text-2xl">
+                    از {(30_000_000).toLocaleString("fa")} تومان
+                  </p>
+                  <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                  </ul>
+                  <Button>
+                    <span>خرید</span>
+                    <CheckIcon />
+                  </Button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        <div className="grid grid-cols-4 gap-6 flex-1 max-lg:hidden">
           <div className="p-6 border-4 border-card rounded-lg flex flex-col">
             <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
               وب اپلیکیشن
@@ -837,10 +1000,50 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[7] = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="wrapper lg:h-screen lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-12 max-lg:mt-20"
       >
-        <h3 className="text-5xl font-bold font-morabba-medium">بلاگر های ما</h3>
-        <div className="grid grid-cols-4 gap-6 flex-1">
+        <h3 className="heading max-lg:text-center">بلاگر های ما</h3>
+
+        {/* Swiper carousel برای موبایل */}
+        <div className="w-full lg:hidden mt-5">
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={20}
+            pagination={true}
+            modules={[Pagination]}
+            className="w-full"
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SwiperSlide className="pb-12" key={index}>
+                <div className="p-6 border-4 border-card rounded-lg flex flex-col">
+                  <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
+                    وب اپلیکیشن
+                  </p>
+                  <p className="text-center mt-6 text-2xl">
+                    از {(30_000_000).toLocaleString("fa")} تومان
+                  </p>
+                  <ul className="my-auto list-disc text-sm text-center space-y-3 leading-loose">
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                    <li>
+                      لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ
+                    </li>
+                  </ul>
+                  <Button>
+                    <span>خرید</span>
+                    <CheckIcon />
+                  </Button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        <div className="grid grid-cols-4 gap-6 flex-1 max-lg:hidden">
           <div className="p-6 border-4 border-card rounded-lg flex flex-col">
             <p className="px-3 py-1 bg-green-600 mx-auto w-max rounded-full">
               وب اپلیکیشن
@@ -941,15 +1144,23 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[8] = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="wrapper lg:h-screen lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-12 max-lg:mt-20"
       >
-        <h3 className="text-5xl font-bold font-morabba-medium">نظرات مشتریان</h3>
+        <h3 className="heading max-lg:text-center">نظرات مشتریان</h3>
         <Swiper
           effect={'coverflow'}
           grabCursor={true}
           centeredSlides={true}
           initialSlide={1}
           slidesPerView={3}
+          breakpoints={{
+            0: {
+              slidesPerView: 1,
+            },
+            1024: {
+              slidesPerView: 3,
+            },
+          }}
           loop={true}
           coverflowEffect={{
             rotate: 50,
@@ -960,9 +1171,9 @@ function Page() {
           }}
           pagination={true}
           modules={[EffectCoverflow, Pagination]}
-          className="w-full flex-1"
+          className="w-full lg:flex-1 max-lg:mt-5"
         >
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -971,7 +1182,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -980,7 +1191,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -989,7 +1200,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -998,7 +1209,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -1007,7 +1218,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -1016,7 +1227,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -1025,7 +1236,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -1034,7 +1245,7 @@ function Page() {
               </div>
             </div>
           </SwiperSlide>
-          <SwiperSlide>
+          <SwiperSlide className='max-lg:pb-12'>
             <div className="h-full flex flex-col justify-center items-center">
 
               <div className="p-6 rounded-lg bg-card">
@@ -1051,14 +1262,14 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[9] = el
         }}
-        className="wrapper h-screen pt-26 pb-6 flex flex-col items-center justify-center gap-12"
+        className="wrapper lg:h-screen lg:pt-26 lg:pb-6 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-12 max-lg:mt-20"
       >
-        <h3 className="text-5xl font-bold font-morabba-medium">سوالات متداول</h3>
-        <div className="w-full grid grid-cols-2 gap-6 flex-1">
+        <h3 className="heading max-lg:text-center">سوالات متداول</h3>
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6 lg:flex-1 max-lg:mt-5">
           {faqItems.map((item) => (
             <Dialog key={item.id}>
               <DialogTrigger asChild>
-                <Button className="w-full justify-between h-full" variant={"outline"} size={"lg"}>
+                <Button className="w-full justify-between lg:h-full" variant={"outline"} size={"lg"}>
                   <span>{item.question}</span>
                   <ArrowLeftIcon />
                 </Button>
@@ -1081,12 +1292,12 @@ function Page() {
         ref={(el) => {
           if (el) sectionsRef.current[10] = el
         }}
-        className="h-screen pt-26 pb-6"
+        className="lg:h-screen lg:pt-26 lg:pb-6 max-lg:mt-20"
       >
-        <div className="h-full bg-linear-to-t from-card to-background py-12 rounded-b-[15%]">
-          <div className="wrapper h-full flex flex-col items-center justify-center gap-12">
-            <h3 className="text-5xl font-bold font-morabba-medium">ارتباط و همکاری با ما</h3>
-            <div className="grid grid-cols-2 gap-6 w-3/4">
+        <div className="lg:h-full bg-linear-to-t from-card to-background py-12 rounded-b-[15%]">
+          <div className="wrapper lg:h-full flex flex-col items-center justify-center gap-5 lg:gap-12">
+            <h3 className="heading max-lg:text-center">ارتباط و همکاری با ما</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6 lg:w-3/4">
               <InputGroup>
                 <InputGroupAddon>
                   <UserIcon />
@@ -1101,14 +1312,14 @@ function Page() {
                 <InputGroupInput type="file" placeholder="فایل ضمیمه (اختیاری)" />
               </InputGroup>
 
-              <InputGroup className="col-span-2">
+              <InputGroup className="lg:col-span-2">
                 <InputGroupAddon>
                   <TextAlignCenterIcon />
                 </InputGroupAddon>
                 <InputGroupTextarea placeholder="شرح موضوع تان..." />
               </InputGroup>
 
-              <div className="col-span-2 flex justify-end">
+              <div className="lg:col-span-2 flex justify-end">
                 <Button>ارسال</Button>
               </div>
             </div>
@@ -1124,10 +1335,10 @@ function Page() {
             footerRef.current = el
           }
         }}
-        className="wrapper h-screen pt-26 flex flex-col justify-center items-center relative">
+        className="wrapper lg:h-screen lg:pt-26 flex flex-col justify-center items-center relative max-lg:my-40">
         <Image
           ref={footerLogoRef}
-          className="absolute -z-10 blur-sm will-change-transform"
+          className="absolute -z-10 blur-sm will-change-transform w-3/4 aspect-square max-w-[500px]"
           style={{ opacity: 0.1 }}
           src="/logo-white.svg"
           alt="logo"
@@ -1135,7 +1346,7 @@ function Page() {
           height={500}
         />
 
-        <p className="text-center w-1/2 leading-loose">
+        <p className="text-center lg:w-1/2 leading-loose">
           لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
         </p>
 

@@ -158,6 +158,10 @@
   @apply px-6;
 }
 
+@utility heading {
+  @apply text-3xl lg:text-5xl font-bold font-morabba-medium leading-snug;
+}
+
 @utility infinite-scroll-x {
   animation: scroll-x 20s linear infinite;
 }

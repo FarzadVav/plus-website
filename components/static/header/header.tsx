@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { HeadsetIcon, MailIcon, PhoneIcon } from "lucide-react"
+import { HeadsetIcon, MailIcon, PhoneIcon, MenuIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +13,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import Link from "next/link"
 
 // mapping بین لینک‌ها و index سکشن‌ها - باید دقیقا با ترتیب و نام سکشن‌های صفحه برابر باشد
 const sectionMap: Record<string, number> = {
@@ -82,83 +91,200 @@ function Header() {
   }
 
   return (
-    <header className="h-20 bg-background/10 backdrop-blur-sm flex items-center gap-6 wrapper sticky top-0 z-40">
+    <header className="h-20 bg-background/10 backdrop-blur-sm flex items-center gap-3 wrapper sticky top-0 z-40">
       <Image className="fill-primary" src="/logo.svg" alt="logo" width={36} height={36} />
 
-      <nav className="flex items-center gap-3 mx-auto">
-        <Button variant={getButtonVariant("home")} onClick={(e) => handleNavClick("home", e)}>
+      {/* Desktop Navigation */}
+      <nav className="hidden xl:flex items-center gap-1.5 mx-auto">
+        <Button size={"sm"} variant={getButtonVariant("home")} onClick={(e) => handleNavClick("home", e)}>
           خانه
         </Button>
-        <Button variant={getButtonVariant("about")} onClick={(e) => handleNavClick("about", e)}>
+        <Button size={"sm"} variant={getButtonVariant("about")} onClick={(e) => handleNavClick("about", e)}>
           درباره ما
         </Button>
-        <Button variant={getButtonVariant("portfolio")} onClick={(e) => handleNavClick("portfolio", e)}>
+        <Button size={"sm"} variant={getButtonVariant("portfolio")} onClick={(e) => handleNavClick("portfolio", e)}>
           نمونه کار های ما
         </Button>
-        <Button variant={getButtonVariant("softwarePackages")} onClick={(e) => handleNavClick("softwarePackages", e)}>
+        <Button size={"sm"} variant={getButtonVariant("softwarePackages")} onClick={(e) => handleNavClick("softwarePackages", e)}>
           پکیج های نرم افزاری
         </Button>
-        <Button variant={getButtonVariant("contentPackages")} onClick={(e) => handleNavClick("contentPackages", e)}>
+        <Button size={"sm"} variant={getButtonVariant("contentPackages")} onClick={(e) => handleNavClick("contentPackages", e)}>
           پکیج های تولید محتوا
         </Button>
-        <Button variant={getButtonVariant("bloggers")} onClick={(e) => handleNavClick("bloggers", e)}>
+        <Button size={"sm"} variant={getButtonVariant("bloggers")} onClick={(e) => handleNavClick("bloggers", e)}>
           بلاگر های ما
         </Button>
-        <Button variant={getButtonVariant("testimonials")} onClick={(e) => handleNavClick("testimonials", e)}>
+        <Button size={"sm"} variant={getButtonVariant("testimonials")} onClick={(e) => handleNavClick("testimonials", e)}>
           نظرات مشتریان
         </Button>
-        <Button variant={getButtonVariant("faq")} onClick={(e) => handleNavClick("faq", e)}>
+        <Button size={"sm"} variant={getButtonVariant("faq")} onClick={(e) => handleNavClick("faq", e)}>
           سوالات متداول
         </Button>
-        <Button variant={getButtonVariant("contact")} onClick={(e) => handleNavClick("contact", e)}>
+        <Button size={"sm"} variant={getButtonVariant("contact")} onClick={(e) => handleNavClick("contact", e)}>
           ارتباط با ما
         </Button>
       </nav>
 
-      <DropdownMenu dir="rtl">
-        <DropdownMenuTrigger asChild>
+      {/* Desktop Dropdown Menu */}
+      <div className="max-xl:hidden">
+        <DropdownMenu dir="rtl">
+          <DropdownMenuTrigger asChild>
+            <Button size={"icon"} variant={"outline"}>
+              <HeadsetIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" align="end" className="w-56">
+            <DropdownMenuLabel>تماس با ما</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="mailto:info@plus.com" className="flex items-center gap-2 w-full">
+                <MailIcon className="size-4" />
+                <span>info@plus.com</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a href="tel:09123456789" className="flex items-center gap-2 w-full">
+                <PhoneIcon className="size-4" />
+                <span>09123456789</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>شبکه‌های اجتماعی</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="#" className="flex items-center gap-2 w-full">
+                <Image src="/instagram.png" alt="instagram" width={20} height={20} />
+                <span>اینستاگرام</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a href="#" className="flex items-center gap-2 w-full">
+                <Image src="/telegram.png" alt="telegram" width={20} height={20} />
+                <span>تلگرام</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a href="#" className="flex items-center gap-2 w-full">
+                <Image src="/linkedin.png" alt="linkedin" width={20} height={20} />
+                <span>لینکدین</span>
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Mobile Menu Sheet */}
+      <Sheet>
+        <SheetTrigger asChild className="xl:hidden mr-auto">
           <Button size={"icon"} variant={"outline"}>
-            <HeadsetIcon />
+            <MenuIcon />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="bottom" align="end" className="w-56">
-          <DropdownMenuLabel>تماس با ما</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <a href="mailto:info@plus.com" className="flex items-center gap-2 w-full">
-              <MailIcon className="size-4" />
-              <span>info@plus.com</span>
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href="tel:09123456789" className="flex items-center gap-2 w-full">
-              <PhoneIcon className="size-4" />
-              <span>09123456789</span>
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel>شبکه‌های اجتماعی</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <a href="#" className="flex items-center gap-2 w-full">
-              <Image src="/instagram.png" alt="instagram" width={20} height={20} />
-              <span>اینستاگرام</span>
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href="#" className="flex items-center gap-2 w-full">
-              <Image src="/telegram.png" alt="telegram" width={20} height={20} />
-              <span>تلگرام</span>
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href="#" className="flex items-center gap-2 w-full">
-              <Image src="/linkedin.png" alt="linkedin" width={20} height={20} />
-              <span>لینکدین</span>
-            </a>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+          <SheetHeader>
+            <SheetTitle>پلاس</SheetTitle>
+          </SheetHeader>
+
+          <nav className="flex flex-col gap-3 px-3">
+            <Button
+              variant={getButtonVariant("home")}
+              onClick={(e) => handleNavClick("home", e)}
+              className="w-full justify-start"
+            >
+              خانه
+            </Button>
+            <Button
+              variant={getButtonVariant("about")}
+              onClick={(e) => handleNavClick("about", e)}
+              className="w-full justify-start"
+            >
+              درباره ما
+            </Button>
+            <Button
+              variant={getButtonVariant("portfolio")}
+              onClick={(e) => handleNavClick("portfolio", e)}
+              className="w-full justify-start"
+            >
+              نمونه کار های ما
+            </Button>
+            <Button
+              variant={getButtonVariant("softwarePackages")}
+              onClick={(e) => handleNavClick("softwarePackages", e)}
+              className="w-full justify-start"
+            >
+              پکیج های نرم افزاری
+            </Button>
+            <Button
+              variant={getButtonVariant("contentPackages")}
+              onClick={(e) => handleNavClick("contentPackages", e)}
+              className="w-full justify-start"
+            >
+              پکیج های تولید محتوا
+            </Button>
+            <Button
+              variant={getButtonVariant("bloggers")}
+              onClick={(e) => handleNavClick("bloggers", e)}
+              className="w-full justify-start"
+            >
+              بلاگر های ما
+            </Button>
+            <Button
+              variant={getButtonVariant("testimonials")}
+              onClick={(e) => handleNavClick("testimonials", e)}
+              className="w-full justify-start"
+            >
+              نظرات مشتریان
+            </Button>
+            <Button
+              variant={getButtonVariant("faq")}
+              onClick={(e) => handleNavClick("faq", e)}
+              className="w-full justify-start"
+            >
+              سوالات متداول
+            </Button>
+            <Button
+              variant={getButtonVariant("contact")}
+              onClick={(e) => handleNavClick("contact", e)}
+              className="w-full justify-start"
+            >
+              ارتباط با ما
+            </Button>
+          </nav>
+
+          <SheetFooter className="grid grid-cols-2 gap-3 mt-auto">
+            <Link href="mailto:info@plus.com" className="w-full">
+              <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
+                <MailIcon />
+                <span>info@plus.com</span>
+              </Button>
+            </Link>
+            <Link href="tel:09123456789" className="w-full">
+              <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
+                <PhoneIcon />
+                <span>09123456789</span>
+              </Button>
+            </Link> 
+            <Link href="#" className="w-full">
+              <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
+                <Image src="/instagram.png" alt="instagram" width={20} height={20} />
+                <span>اینستاگرام</span>
+              </Button>
+            </Link>
+            <Link href="#" className="w-full">
+              <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
+                <Image src="/telegram.png" alt="telegram" width={20} height={20} />
+                <span>تلگرام</span>
+              </Button>
+            </Link>
+            <Link href="#" className="w-full">
+              <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
+                <Image src="/linkedin.png" alt="linkedin" width={20} height={20} />
+                <span>لینکدین</span>
+              </Button>
+            </Link>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </header >
   )
 }

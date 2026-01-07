@@ -16,7 +16,7 @@ const AboutSection = forwardRef<HTMLDivElement, AboutSectionProps>(
       <div
         id={id}
         ref={ref}
-        className={`${showCooperationBar ? "" : "max-lg:mt-20"}`}
+        className={"lg:h-screen lg:pt-20"}
       >
         {showCooperationBar && (
           <div className="bg-card h-26 flex items-center overflow-hidden relative max-lg:mt-20">
@@ -32,7 +32,7 @@ const AboutSection = forwardRef<HTMLDivElement, AboutSectionProps>(
             </div>
           </div>
         )}
-        <div className="wrapper lg:h-screen lg:pt-20 grid grid-cols-1 gap-6 lg:grid-cols-2 max-lg:mt-20">
+        <div className={`wrapper ${showCooperationBar ? "lg:h-[calc(100%-6.5rem)]" : "lg:h-full"} grid grid-cols-1 gap-6 lg:grid-cols-2 max-lg:mt-20`}>
           <div
             className={`lg:h-full flex justify-center items-center ${isImageLeft ? "max-lg:row-start-2" : "max-lg:row-start-1"}`}
           >

@@ -32,30 +32,30 @@ const AboutSection = forwardRef<HTMLDivElement, AboutSectionProps>(
             </div>
           </div>
         )}
-        <div className="wrapper lg:h-screen lg:pt-20 grid grid-cols-1 lg:grid-cols-2">
+        <div className="wrapper lg:h-screen lg:pt-20 grid grid-cols-1 gap-6 lg:grid-cols-2 max-lg:mt-20">
           <div
-            className={`lg:h-full flex justify-center items-center ${isImageLeft ? "" : "max-lg:row-start-1"}`}
+            className={`lg:h-full flex justify-center items-center ${isImageLeft ? "max-lg:row-start-2" : "max-lg:row-start-1"}`}
           >
             {isImageLeft ? (
-              <div className="size-96 rounded-lg bg-card"></div>
-            ) : (
               <div className="lg:w-3/4">
                 <h3 className="heading max-lg:text-center">{title}</h3>
                 <p className="leading-loose mt-3 lg:mt-6 max-lg:text-center">{description}</p>
               </div>
+            ) : (
+              <div className="size-96 rounded-lg bg-card"></div>
             )}
           </div>
 
           <div
-            className={`h-full flex justify-center items-center mt-5 ${isImageLeft ? "" : "max-lg:row-start-2 mb-5"}`}
+            className={`h-full flex justify-center items-center ${isImageLeft ? "max-lg:row-start-1" : "max-lg:row-start-2"}`}
           >
             {isImageLeft ? (
+              <div className="size-96 rounded-lg bg-card"></div>
+            ) : (
               <div className="lg:w-3/4">
                 <h3 className="heading max-lg:text-center">{title}</h3>
                 <p className="leading-loose mt-3 lg:mt-6 max-lg:text-center">{description}</p>
               </div>
-            ) : (
-              <div className="size-96 rounded-lg bg-card"></div>
             )}
           </div>
         </div>

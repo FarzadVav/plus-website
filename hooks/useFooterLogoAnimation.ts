@@ -52,16 +52,43 @@ export function useFooterLogoAnimation(
       gsap.to(logo, { opacity: 0.1, duration: 0.3, ease: "power2.out" })
     }
 
-    footer.addEventListener("mousemove", handleMouseMove)
-    footer.addEventListener("mouseleave", handleMouseLeave)
-    footer.addEventListener("mousedown", handleMouseDown)
-    footer.addEventListener("mouseup", handleMouseUp)
+    const isLargeScreen = () => window.innerWidth >= 1024
 
-    return () => {
+    const setupEventListeners = () => {
+      if (isLargeScreen()) {
+        footer.addEventListener("mousemove", handleMouseMove)
+        footer.addEventListener("mouseleave", handleMouseLeave)
+        footer.addEventListener("mousedown", handleMouseDown)
+        footer.addEventListener("mouseup", handleMouseUp)
+      } else {
+        // Reset position when screen is too small
+        xTo(0)
+        yTo(0)
+        rotateTo(0)
+      }
+    }
+
+    const removeEventListeners = () => {
       footer.removeEventListener("mousemove", handleMouseMove)
       footer.removeEventListener("mouseleave", handleMouseLeave)
       footer.removeEventListener("mousedown", handleMouseDown)
       footer.removeEventListener("mouseup", handleMouseUp)
+    }
+
+    const handleResize = () => {
+      removeEventListeners()
+      setupEventListeners()
+    }
+
+    // Initial setup
+    setupEventListeners()
+
+    // Listen for resize events
+    window.addEventListener("resize", handleResize)
+
+    return () => {
+      removeEventListeners()
+      window.removeEventListener("resize", handleResize)
     }
   }, [footerRef, logoRef])
 }

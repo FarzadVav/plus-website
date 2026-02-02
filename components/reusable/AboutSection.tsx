@@ -1,15 +1,16 @@
 import { forwardRef } from "react"
 
+const title = "درباره ما";
+const description = "تیم پلاس استادیو طی پنج سال بر علم دیجیتال مارکتینگ تسلط کامل را ایجاد کرده تا بتواند نوین ترین خدمات انلاین جهت توسعه‌ی تخصصی کسب و کار و ایجاد درآمد را به مردم ایرانی هدیه دهد. اینجا ما مشاوره‌ی تخصصی میدیم تا ایده های شما به واقعیت تبدیل و توسط تیم ما اجرا شود. هم اکنون میتوانید با مطالعه‌ی کامل سایت پلاس استادیو خدمات مارا ببینید و ایده پردازی کنید تا جریان ثروت رو به سمت خودتون هدایت کنید."
+
 interface AboutSectionProps {
   id: string
-  title: string
-  description: string
   imagePosition?: "left" | "right"
   showCooperationBar?: boolean
 }
 
 const AboutSection = forwardRef<HTMLDivElement, AboutSectionProps>(
-  ({ id, title, description, imagePosition = "right", showCooperationBar = false }, ref) => {
+  ({ id, imagePosition = "right", showCooperationBar = false }, ref) => {
     const isImageLeft = imagePosition === "left"
 
     return (

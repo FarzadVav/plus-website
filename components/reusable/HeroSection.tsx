@@ -15,11 +15,10 @@ const HeroSection = forwardRef<HTMLDivElement>((_, ref) => {
             پلاس
           </h1>
           <h2 className="heading mt-9 max-lg:text-center">
-            بزرگ ترین شرکت <br /> برنامه نویسی مشهد
+            توسعه‌ی کسب و کارتونو صفر تا صد به ما بسپارید
           </h2>
           <p className="mt-6 leading-loose max-lg:text-center">
-            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ <br /> و با استفاده از
-            طراحان گرافیک است
+            اولین مجموعه‌ی چند منظوره‌ی توسعه‌ی کسب و کار بر اساس علم دیجیتال مارکتینگ
           </p>
         </div>
       </div>

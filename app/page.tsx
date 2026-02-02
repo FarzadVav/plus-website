@@ -63,8 +63,6 @@ function Page() {
       {/* About Sections */}
       <AboutSection
         id="about"
-        title="درباره ما"
-        description={ABOUT_DESCRIPTION}
         imagePosition="right"
         showCooperationBar={true}
         ref={(el) => {
@@ -74,8 +72,6 @@ function Page() {
 
       <AboutSection
         id="about-2"
-        title="درباره ما"
-        description={ABOUT_DESCRIPTION}
         imagePosition="left"
         ref={(el) => {
           if (el) sectionsRef.current[2] = el
@@ -84,8 +80,6 @@ function Page() {
 
       <AboutSection
         id="about-3"
-        title="درباره ما"
-        description={ABOUT_DESCRIPTION}
         imagePosition="right"
         ref={(el) => {
           if (el) sectionsRef.current[3] = el

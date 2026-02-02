@@ -20,9 +20,6 @@ import FAQSection from "@/components/reusable/FAQSection"
 import ContactSection from "@/components/reusable/ContactSection"
 import FooterSection from "@/components/reusable/FooterSection"
 
-const ABOUT_DESCRIPTION =
-  "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ پیشرو در زبان فارسی ایجاد کرد، در این صورت می توان امید داشت."
-
 // ایجاد آرایه پکیج‌ها برای استفاده مجدد
 const createPackages = (count: number) =>
   Array.from({ length: count }, () => ({
@@ -34,20 +31,11 @@ const createPackages = (count: number) =>
 function Page() {
   const containerRef = useRef<HTMLDivElement>(null)
   const sectionsRef = useRef<HTMLDivElement[]>([])
-  const portfolioContainerRef = useRef<HTMLDivElement>(null)
-  const portfolioIndexRef = useRef(0)
-  const isInPortfolioRef = useRef(false)
   const footerLogoRef = useRef<HTMLImageElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
 
   // استفاده از custom hooks
-  useScrollNavigation({
-    sectionsRef,
-    portfolioContainerRef,
-    portfolioIndexRef,
-    isInPortfolioRef,
-    portfolioItemsLength: portfolioItems.length,
-  })
+  useScrollNavigation({ sectionsRef })
 
   useFooterLogoAnimation(footerRef, footerLogoRef)
 
@@ -86,14 +74,18 @@ function Page() {
         }}
       />
 
-      {/* Portfolio Section */}
-      <PortfolioSection
-        items={portfolioItems}
-        portfolioContainerRef={portfolioContainerRef}
-        ref={(el) => {
-          if (el) sectionsRef.current[4] = el
-        }}
-      />
+      {/* Portfolio Sections */}
+      {portfolioItems.map((item, index) => (
+        <PortfolioSection
+          key={item.title}
+          id={`portfolio-${index + 1}`}
+          item={item}
+          imagePosition={index % 2 === 0 ? "right" : "left"}
+          ref={(el) => {
+            if (el) sectionsRef.current[4 + index] = el
+          }}
+        />
+      ))}
 
       {/* Software Packages Section */}
       <PackageSection
@@ -101,7 +93,7 @@ function Page() {
         title="پکیج های نرم افزاری"
         packages={createPackages(4)}
         ref={(el) => {
-          if (el) sectionsRef.current[5] = el
+          if (el) sectionsRef.current[7] = el
         }}
       />
 
@@ -111,7 +103,7 @@ function Page() {
         title="پکیج های تولید محتوا"
         packages={createPackages(4)}
         ref={(el) => {
-          if (el) sectionsRef.current[6] = el
+          if (el) sectionsRef.current[8] = el
         }}
       />
 
@@ -121,7 +113,7 @@ function Page() {
         title="بلاگر های ما"
         packages={createPackages(4)}
         ref={(el) => {
-          if (el) sectionsRef.current[7] = el
+          if (el) sectionsRef.current[9] = el
         }}
       />
 
@@ -129,7 +121,7 @@ function Page() {
       <TestimonialsSection
         testimonials={testimonials}
         ref={(el) => {
-          if (el) sectionsRef.current[8] = el
+          if (el) sectionsRef.current[10] = el
         }}
       />
 
@@ -137,14 +129,14 @@ function Page() {
       <FAQSection
         items={faqItems}
         ref={(el) => {
-          if (el) sectionsRef.current[9] = el
+          if (el) sectionsRef.current[11] = el
         }}
       />
 
       {/* Contact Section */}
       <ContactSection
         ref={(el) => {
-          if (el) sectionsRef.current[10] = el
+          if (el) sectionsRef.current[12] = el
         }}
       />
 
@@ -153,7 +145,7 @@ function Page() {
         logoRef={footerLogoRef}
         ref={(el) => {
           if (el) {
-            sectionsRef.current[11] = el
+            sectionsRef.current[13] = el
             footerRef.current = el
           }
         }}

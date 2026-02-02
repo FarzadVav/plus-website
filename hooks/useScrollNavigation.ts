@@ -1,24 +1,16 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
-import { MIN_WIDTH_FOR_SCROLL_NAV, PORTFOLIO_SECTION_INDEX, SCROLL_ANIMATION_DURATION } from "@/lib/constants"
+import { MIN_WIDTH_FOR_SCROLL_NAV, SCROLL_ANIMATION_DURATION } from "@/lib/constants"
 
 gsap.registerPlugin(ScrollToPlugin)
 
 interface UseScrollNavigationProps {
   sectionsRef: React.MutableRefObject<HTMLDivElement[]>
-  portfolioContainerRef: React.RefObject<HTMLDivElement | null>
-  portfolioIndexRef: React.MutableRefObject<number>
-  isInPortfolioRef: React.MutableRefObject<boolean>
-  portfolioItemsLength: number
 }
 
 export function useScrollNavigation({
   sectionsRef,
-  portfolioContainerRef,
-  portfolioIndexRef,
-  isInPortfolioRef,
-  portfolioItemsLength,
 }: UseScrollNavigationProps) {
   const scrollToSectionRef = useRef<((index: number) => void) | null>(null)
 
@@ -35,43 +27,11 @@ export function useScrollNavigation({
     let isScrolling = false
     let isScrollNavEnabled = window.innerWidth >= MIN_WIDTH_FOR_SCROLL_NAV
 
-    const scrollPortfolioToPanel = (panelIndex: number) => {
-      if (!portfolioContainerRef.current) return
-
-      isScrolling = true
-      const panelWidth = window.innerWidth
-      const isRTL = document.documentElement.dir === "rtl"
-      const direction = isRTL ? 1 : -1
-
-      gsap.to(portfolioContainerRef.current, {
-        x: direction * panelIndex * panelWidth,
-        duration: 0.8,
-        ease: "power2.inOut",
-        onComplete: () => {
-          isScrolling = false
-          portfolioIndexRef.current = panelIndex
-        },
-      })
-    }
-
     const scrollToNext = () => {
       if (isScrolling || !isScrollNavEnabled) return
 
-      if (currentIndex === PORTFOLIO_SECTION_INDEX && isInPortfolioRef.current) {
-        if (portfolioIndexRef.current < portfolioItemsLength - 1) {
-          scrollPortfolioToPanel(portfolioIndexRef.current + 1)
-          return
-        } else {
-          isInPortfolioRef.current = false
-          portfolioIndexRef.current = 0
-        }
-      }
-
       if (currentIndex < snapPoints.length - 1) {
         currentIndex++
-        if (currentIndex === PORTFOLIO_SECTION_INDEX) {
-          portfolioIndexRef.current = 0
-        }
         scrollToSection(currentIndex)
       }
     }
@@ -79,20 +39,8 @@ export function useScrollNavigation({
     const scrollToPrevious = () => {
       if (isScrolling || !isScrollNavEnabled) return
 
-      if (currentIndex === PORTFOLIO_SECTION_INDEX && isInPortfolioRef.current) {
-        if (portfolioIndexRef.current > 0) {
-          scrollPortfolioToPanel(portfolioIndexRef.current - 1)
-          return
-        } else {
-          isInPortfolioRef.current = false
-        }
-      }
-
       if (currentIndex > 0) {
         currentIndex--
-        if (currentIndex === PORTFOLIO_SECTION_INDEX) {
-          portfolioIndexRef.current = portfolioItemsLength - 1
-        }
         scrollToSection(currentIndex)
       }
     }
@@ -132,7 +80,7 @@ export function useScrollNavigation({
       }
     }
 
-    const scrollToSection = (index: number, fromNavClick = false) => {
+    const scrollToSection = (index: number) => {
       if (!isScrollNavEnabled || isScrolling) return
       if (index < 0 || index >= snapPoints.length) return
 
@@ -158,29 +106,6 @@ export function useScrollNavigation({
           isScrolling = false
           currentIndex = index
 
-          if (index === PORTFOLIO_SECTION_INDEX) {
-            isInPortfolioRef.current = true
-
-            if (fromNavClick) {
-              portfolioIndexRef.current = 0
-            }
-
-            if (portfolioContainerRef.current) {
-              const panelWidth = window.innerWidth
-              const isRTL = document.documentElement.dir === "rtl"
-              const direction = isRTL ? 1 : -1
-              gsap.set(portfolioContainerRef.current, {
-                x: direction * portfolioIndexRef.current * panelWidth,
-              })
-            }
-          } else {
-            isInPortfolioRef.current = false
-            portfolioIndexRef.current = 0
-            if (portfolioContainerRef.current) {
-              gsap.set(portfolioContainerRef.current, { x: 0 })
-            }
-          }
-
           const event = new CustomEvent("sectionChange", { detail: { currentIndex: index } })
           window.dispatchEvent(event)
         },
@@ -189,34 +114,16 @@ export function useScrollNavigation({
 
     scrollToSectionRef.current = scrollToSection
 
-    // قرار دادن تابع در window برای استفاده از Header
-    ;(window as Window & { scrollToSection?: (index: number) => void }).scrollToSection = (
-      index: number
-    ) => scrollToSection(index, true)
+      // قرار دادن تابع در window برای استفاده از Header
+      ; (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection = (
+        index: number
+      ) => scrollToSection(index)
 
     const updateSnapPoints = () => {
       setTimeout(() => {
         snapPoints = calculateSnapPoints()
 
-        const wasEnabled = isScrollNavEnabled
         isScrollNavEnabled = window.innerWidth >= MIN_WIDTH_FOR_SCROLL_NAV
-
-        if (wasEnabled && !isScrollNavEnabled) {
-          isInPortfolioRef.current = false
-          portfolioIndexRef.current = 0
-          if (portfolioContainerRef.current) {
-            gsap.set(portfolioContainerRef.current, { x: 0 })
-          }
-        }
-
-        if (isScrollNavEnabled && portfolioContainerRef.current && isInPortfolioRef.current) {
-          const panelWidth = window.innerWidth
-          const isRTL = document.documentElement.dir === "rtl"
-          const direction = isRTL ? 1 : -1
-          gsap.set(portfolioContainerRef.current, {
-            x: direction * portfolioIndexRef.current * panelWidth,
-          })
-        }
       }, 100)
     }
 
@@ -248,20 +155,6 @@ export function useScrollNavigation({
 
       currentIndex = bestIndex
 
-      if (currentIndex === PORTFOLIO_SECTION_INDEX) {
-        if (!isInPortfolioRef.current) {
-          isInPortfolioRef.current = true
-        }
-      } else {
-        if (isInPortfolioRef.current) {
-          isInPortfolioRef.current = false
-          portfolioIndexRef.current = 0
-          if (portfolioContainerRef.current) {
-            gsap.set(portfolioContainerRef.current, { x: 0 })
-          }
-        }
-      }
-
       const event = new CustomEvent("sectionChange", { detail: { currentIndex } })
       window.dispatchEvent(event)
     }
@@ -288,7 +181,7 @@ export function useScrollNavigation({
       window.removeEventListener("scroll", updateCurrentIndex)
       delete (window as Window & { scrollToSection?: (index: number) => void }).scrollToSection
     }
-  }, [sectionsRef, portfolioContainerRef, portfolioIndexRef, isInPortfolioRef, portfolioItemsLength])
+  }, [sectionsRef])
 
   return scrollToSectionRef
 }

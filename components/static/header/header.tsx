@@ -28,17 +28,18 @@ const sectionMap: Record<string, number> = {
   home: 0,                    // خانه (Hero)
   about: 1,                  // درباره ما (اولین سکشن - برای scroll)
   portfolio: 4,              // نمونه کار های ما
-  softwarePackages: 5,      // پکیج های نرم افزاری
-  contentPackages: 6,        // پکیج های تولید محتوا
-  bloggers: 7,               // بلاگر های ما
-  testimonials: 8,          // نظرات مشتریان
-  faq: 9,                   // سوالات متداول
-  contact: 10,               // ارتباط و همکاری با ما
+  softwarePackages: 7,      // پکیج های نرم افزاری
+  contentPackages: 8,        // پکیج های تولید محتوا
+  bloggers: 9,               // بلاگر های ما
+  testimonials: 10,          // نظرات مشتریان
+  faq: 11,                   // سوالات متداول
+  contact: 12,               // ارتباط و همکاری با ما
 }
 
 // سکشن‌های چندگانه که باید یک لینک داشته باشند
 const multiSectionMap: Record<string, number[]> = {
   about: [1, 2, 3],          // سه سکشن "درباره ما"
+  portfolio: [4, 5, 6],      // سه سکشن "نمونه کار های ما"
 }
 
 function Header() {
@@ -263,7 +264,7 @@ function Header() {
                 <PhoneIcon />
                 <span>09123456789</span>
               </Button>
-            </Link> 
+            </Link>
             <Link href="#" className="w-full">
               <Button variant={"ghost"} size={"sm"} className="w-full justify-start">
                 <Image src="/instagram.png" alt="instagram" width={20} height={20} />

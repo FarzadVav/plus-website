@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import Link from "next/link"
 import Image from "next/image"
+import { useState, useEffect } from "react"
 import { HeadsetIcon, MailIcon, PhoneIcon, MenuIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +22,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import Link from "next/link"
 
 // mapping بین لینک‌ها و index سکشن‌ها - باید دقیقا با ترتیب و نام سکشن‌های صفحه برابر باشد
 const sectionMap: Record<string, number> = {

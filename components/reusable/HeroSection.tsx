@@ -1,28 +1,18 @@
+import Image from "next/image"
 import { forwardRef } from "react"
 import { EffectCards } from "swiper/modules"
 import { Swiper, SwiperSlide } from "swiper/react"
 
-import securityImg from "@/public/امنیت سایت و امنیت پیج.png"
-import contentCreatingImg from "@/public/تولید محتوا و مدیریت تخصصی صفحات اینستاگرام.png"
-import appImg from "@/public/ساخت اپلیکیشن.png"
-import scriptingImg from "@/public/سناریو نویسی تخصصی جهت توسعه‌ی کسب و کار ها.png"
-import brandingImg from "@/public/طراحی برند بوک و هویت بصری در سه سطح حرفه‌ای.png"
-import websiteImg from "@/public/طراحی سایت فروشگاهی.png"
-import labelImg from "@/public/طراحی لیبل بر اساس روانشناسی بازار.png"
-import managementAppImg from "@/public/طراحی و ساخت اپلیکیشن مدیریتی crm.png"
-import recordingImg from "@/public/فیلم برداری حرفه‌ای با تجهیزات سینمایی.png"
-import Image from "next/image"
-
 const SLIDES = [
-  { title: "تولید محتوای اینستاگرام", src: contentCreatingImg },
-  { title: "ساخت اپلیکیشن", src: appImg },
-  { title: "سناریو نویسی", src: scriptingImg },
-  { title: "طراحی برند", src: brandingImg },
-  { title: "طراحی سایت", src: websiteImg },
-  { title: "طراحی لیبل", src: labelImg },
-  { title: "ساخت اپلیکیشن CRM", src: managementAppImg },
-  { title: "امنیت سایت و پیج", src: securityImg },
-  { title: "فیلم برداری", src: recordingImg },
+  { title: "تولید محتوای اینستاگرام", src: "/contentCreating.png" },
+  { title: "ساخت اپلیکیشن", src: "/app.png" },
+  { title: "سناریو نویسی", src: "/scripting.png" },
+  { title: "طراحی برند", src: "/branding.png" },
+  { title: "طراحی سایت", src: "/website.png" },
+  { title: "طراحی لیبل", src: "/label.png" },
+  { title: "ساخت اپلیکیشن CRM", src: "/crm.png" },
+  { title: "امنیت سایت و پیج", src: "/security.png" },
+  { title: "فیلم برداری", src: "/recording.png" },
 ]
 
 const HeroSection = forwardRef<HTMLDivElement>((_, ref) => {
